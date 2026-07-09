@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>engrama — painel de acompanhamento</title>
+<style>
+:root{
+  --surface:#fcfcfb; --plano:#f9f9f7; --ink:#0b0b0b; --ink2:#52514e;
+  --muted:#898781; --grade:#e1e0d9; --eixo:#c3c2b7;
+  --borda:rgba(11,11,11,.10); --serie:#2a78d6;
+  --ok:#0ca30c; --espera:#fab219; --neutro:#898781;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface:#1a1a19; --plano:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7;
+    --muted:#898781; --grade:#2c2c2a; --eixo:#383835;
+    --borda:rgba(255,255,255,.10); --serie:#3987e5;
+  }
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--plano);color:var(--ink);
+  font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;padding:32px 16px}
+main{max-width:820px;margin:0 auto;display:grid;gap:16px}
+header h1{font-size:1.5rem;letter-spacing:-.01em}
+header p{color:var(--ink2);max-width:64ch;margin-top:6px}
+.carimbo{color:var(--muted);font-size:.8rem;margin-top:8px}
+section{background:var(--surface);border:1px solid var(--borda);
+  border-radius:10px;padding:20px}
+h2{font-size:.95rem;margin-bottom:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--borda);
+  border-radius:10px;padding:14px 16px}
+.tile .rotulo{color:var(--ink2);font-size:.8rem}
+.tile .valor{font-size:1.7rem;font-weight:600;margin-top:2px}
+.tile .nota{color:var(--muted);font-size:.75rem;margin-top:2px}
+figure{overflow-x:auto}
+svg{display:block;max-width:100%}
+svg text{font:11px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
+.barras-h .linha{display:grid;grid-template-columns:11em 1fr 3em;
+  gap:10px;align-items:center;padding:3px 0;font-size:.85rem}
+.barras-h .nome{color:var(--ink2);text-align:right;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.barras-h .trilho{height:14px}
+.barras-h .trilho rect{fill:var(--serie)}
+.barras-h .n{color:var(--ink2);font-variant-numeric:tabular-nums}
+.marcos{display:grid;gap:0}
+.marco{display:grid;grid-template-columns:4.5em 26px 1fr;gap:0;position:relative;
+  padding-bottom:18px}
+.marco:last-child{padding-bottom:0}
+.marco .quando{color:var(--muted);font-size:.8rem;text-align:right;
+  padding-top:1px;font-variant-numeric:tabular-nums}
+.marco .ponto{position:relative;justify-self:center;margin-top:4px;
+  width:10px;height:10px;border-radius:50%;background:var(--serie);
+  box-shadow:0 0 0 2px var(--surface);z-index:1}
+.marco::before{content:"";position:absolute;left:calc(4.5em + 12px);top:8px;
+  bottom:-4px;width:2px;background:var(--grade)}
+.marco:last-child::before{display:none}
+.marco > div{padding-left:14px}
+.marco h3{font-size:.9rem}
+.marco p{color:var(--ink2);font-size:.85rem;margin-top:2px;max-width:60ch}
+.empilhado{display:flex;gap:2px;height:18px;border-radius:5px;overflow:hidden;
+  margin:10px 0 8px}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;
+  color:var(--ink2)}
+.legenda .chave{display:inline-flex;align-items:center;gap:6px}
+.legenda .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.duas-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:640px){.duas-col{grid-template-columns:1fr}}
+ul.lista{list-style:none;display:grid;gap:4px;font-size:.85rem;color:var(--ink2)}
+ul.lista .n{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.custo p{color:var(--ink2);max-width:66ch}
+.custo p+p{margin-top:8px}
+.custo strong{color:var(--ink)}
+footer{color:var(--muted);font-size:.78rem;max-width:70ch}
+footer a{color:var(--ink2)}
+#dica{position:fixed;pointer-events:none;background:var(--ink);
+  color:var(--plano);font-size:.75rem;padding:4px 8px;border-radius:6px;
+  opacity:0;transition:opacity .08s}
+@media print{
+  body{padding:0;background:#fff}
+  #dica{display:none}
+  section,.tile{border-color:#ddd;break-inside:avoid}
+  *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>engrama — painel de acompanhamento</h1>
+  <p>Base de conhecimento verificável do projeto de Distribuição do IBS
+  (SEFAZ-RS): legislação da reforma tributária, resoluções do Comitê Gestor
+  e reuniões de trabalho, tudo indexado sob uma regra única — <strong>nenhuma
+  afirmação é registrada sem âncora literal, verificada por código, no texto
+  da fonte</strong>. Construído com Claude Code sob assinatura Claude Max.</p>
+  <p class="carimbo">Atualizado em 09/07/2026 ·
+  período coberto: 24/05 a 08/07/2026</p>
+</header>
+
+<div class="tiles">
+<div class="tile"><div class="rotulo">Commits</div><div class="valor">70</div><div class="nota">11 dias de trabalho efetivo</div></div>
+<div class="tile"><div class="rotulo">Linhas de código próprio</div><div class="valor">4.584</div><div class="nota">62 arquivos Python</div></div>
+<div class="tile"><div class="rotulo">Testes automatizados</div><div class="valor">141</div><div class="nota">todos passando a cada entrega</div></div>
+<div class="tile"><div class="rotulo">Fontes ingeridas</div><div class="valor">140</div><div class="nota">leis, resoluções, ofícios, reuniões</div></div>
+<div class="tile"><div class="rotulo">Unidades indexadas</div><div class="valor">48.330</div><div class="nota">artigos, incisos, segmentos</div></div>
+<div class="tile"><div class="rotulo">Encaminhamentos</div><div class="valor">706</div><div class="nota">rastreados com âncora na fonte</div></div>
+<div class="tile"><div class="rotulo">Perguntas de validação</div><div class="valor">84/116</div><div class="nota">respondidas pelo gestor</div></div>
+<div class="tile"><div class="rotulo">Custo da ferramenta</div><div class="valor">US$ 100</div><div class="nota">por mês — assinatura Claude Max 5x</div></div>
+</div>
+
+<section>
+  <h2>Atividade de desenvolvimento — commits por dia</h2>
+  <figure><svg viewBox="0 0 760 210" role="img" aria-label="Commits por dia, 24/05 a 09/07">
+<line x1="34" y1="188.0" x2="752" y2="188.0" stroke="var(--grade)" stroke-width="1"/>
+<text x="28" y="191.5" text-anchor="end" font-variant-numeric="tabular-nums">0</text>
+<line x1="34" y1="128.0" x2="752" y2="128.0" stroke="var(--grade)" stroke-width="1"/>
+<text x="28" y="131.5" text-anchor="end" font-variant-numeric="tabular-nums">10</text>
+<line x1="34" y1="68.0" x2="752" y2="68.0" stroke="var(--grade)" stroke-width="1"/>
+<text x="28" y="71.5" text-anchor="end" font-variant-numeric="tabular-nums">20</text>
+<line x1="34" y1="8.0" x2="752" y2="8.0" stroke="var(--grade)" stroke-width="1"/>
+<text x="28" y="11.5" text-anchor="end" font-variant-numeric="tabular-nums">30</text>
+<line x1="34" y1="188" x2="752" y2="188" stroke="var(--eixo)" stroke-width="1"/>
+<text x="36.1" y="204">mai</text>
+<path d="M36.1,188.0 v-140.0 q0,-4 4,-4 h3.0 q4,0 4,4 v140.0 z" fill="var(--serie)" data-dica="24/05 — 24 commits"><title>24/05: 24</title></path>
+<path d="M51.4,188.0 v-86.0 q0,-4 4,-4 h3.0 q4,0 4,4 v86.0 z" fill="var(--serie)" data-dica="25/05 — 15 commits"><title>25/05: 15</title></path>
+<path d="M82.0,188.0 v-2.0 q0,-4 4,-4 h3.0 q4,0 4,4 v2.0 z" fill="var(--serie)" data-dica="27/05 — 1 commit"><title>27/05: 1</title></path>
+<text x="158.4" y="204">jun</text>
+<path d="M158.4,188.0 v-2.0 q0,-4 4,-4 h3.0 q4,0 4,4 v2.0 z" fill="var(--serie)" data-dica="01/06 — 1 commit"><title>01/06: 1</title></path>
+<path d="M173.6,188.0 v-14.0 q0,-4 4,-4 h3.0 q4,0 4,4 v14.0 z" fill="var(--serie)" data-dica="02/06 — 3 commits"><title>02/06: 3</title></path>
+<path d="M295.8,188.0 v-26.0 q0,-4 4,-4 h3.0 q4,0 4,4 v26.0 z" fill="var(--serie)" data-dica="10/06 — 5 commits"><title>10/06: 5</title></path>
+<path d="M311.1,188.0 v-32.0 q0,-4 4,-4 h3.0 q4,0 4,4 v32.0 z" fill="var(--serie)" data-dica="11/06 — 6 commits"><title>11/06: 6</title></path>
+<path d="M326.4,188.0 v-14.0 q0,-4 4,-4 h3.0 q4,0 4,4 v14.0 z" fill="var(--serie)" data-dica="12/06 — 3 commits"><title>12/06: 3</title></path>
+<path d="M509.7,188.0 v-2.0 q0,-4 4,-4 h3.0 q4,0 4,4 v2.0 z" fill="var(--serie)" data-dica="24/06 — 1 commit"><title>24/06: 1</title></path>
+<text x="616.6" y="204">jul</text>
+<path d="M631.9,188.0 v-2.0 q0,-4 4,-4 h3.0 q4,0 4,4 v2.0 z" fill="var(--serie)" data-dica="02/07 — 1 commit"><title>02/07: 1</title></path>
+<path d="M723.6,188.0 v-56.0 q0,-4 4,-4 h3.0 q4,0 4,4 v56.0 z" fill="var(--serie)" data-dica="08/07 — 10 commits"><title>08/07: 10</title></path>
+</svg></figure>
+</section>
+
+<section>
+  <h2>Entregas por área</h2>
+  <div class="barras-h">
+<div class="linha"><span class="nome">ingestão de fontes</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="ingestão de fontes: 21 entregas"><rect x="0" y="0" width="100.0" height="14" rx="2"/></svg><span class="n">21</span></div>
+<div class="linha"><span class="nome">validação humana</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="validação humana: 8 entregas"><rect x="0" y="0" width="38.1" height="14" rx="2"/></svg><span class="n">8</span></div>
+<div class="linha"><span class="nome">banco e versionamento</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="banco e versionamento: 7 entregas"><rect x="0" y="0" width="33.3" height="14" rx="2"/></svg><span class="n">7</span></div>
+<div class="linha"><span class="nome">consulta e busca</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="consulta e busca: 6 entregas"><rect x="0" y="0" width="28.6" height="14" rx="2"/></svg><span class="n">6</span></div>
+<div class="linha"><span class="nome">portão de verificação</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="portão de verificação: 6 entregas"><rect x="0" y="0" width="28.6" height="14" rx="2"/></svg><span class="n">6</span></div>
+<div class="linha"><span class="nome">encaminhamentos</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="encaminhamentos: 4 entregas"><rect x="0" y="0" width="19.0" height="14" rx="2"/></svg><span class="n">4</span></div>
+<div class="linha"><span class="nome">operação</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="operação: 3 entregas"><rect x="0" y="0" width="14.3" height="14" rx="2"/></svg><span class="n">3</span></div>
+<div class="linha"><span class="nome">monitor CGIBS</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="monitor CGIBS: 1 entregas"><rect x="0" y="0" width="4.8" height="14" rx="2"/></svg><span class="n">1</span></div>
+<div class="linha"><span class="nome">reuniões</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="reuniões: 1 entregas"><rect x="0" y="0" width="4.8" height="14" rx="2"/></svg><span class="n">1</span></div>
+<div class="linha"><span class="nome">testes de aceite</span><svg class="trilho" viewBox="0 0 100 14" preserveAspectRatio="none" data-dica="testes de aceite: 1 entregas"><rect x="0" y="0" width="4.8" height="14" rx="2"/></svg><span class="n">1</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Marcos do projeto</h2>
+  <div class="marcos">
+<div class="marco"><span class="quando">24/05</span><span class="ponto"></span><div><h3>Fundação</h3><p>Portão de verificação por código (nenhuma afirmação persiste sem âncora literal na norma), banco versionado com detecção de alterações e parser de legislação com emendas; CF, ADCT, CTN e LCs 214/227 ingeridas do Planalto.</p></div></div>
+<div class="marco"><span class="quando">25/05</span><span class="ponto"></span><div><h3>CGIBS e reuniões</h3><p>Monitor de resoluções e portarias do Comitê Gestor do IBS (ingestão de PDF) e pipeline de reuniões: transcrição local de áudio e encaminhamentos registrados sob o mesmo portão de verificação.</p></div></div>
+<div class="marco"><span class="quando">02/06</span><span class="ponto"></span><div><h3>Busca híbrida</h3><p>Recuperação semântica (embeddings BGE-M3 + sqlite-vec) combinada à busca literal, com protocolo anti-perda para revisão de sínteses.</p></div></div>
+<div class="marco"><span class="quando">11/06</span><span class="ponto"></span><div><h3>Validação humana</h3><p>Questionário de validação com ida-e-volta ao banco, export versionado do dado humano e rotina única de atualização (o ritual de retomada).</p></div></div>
+<div class="marco"><span class="quando">08/07</span><span class="ponto"></span><div><h3>Encaminhamentos vivos</h3><p>Ciclo de vida com evidência (concluir/cancelar passa pelo portão), cruzamento semântico com reuniões posteriores, relatório por frente e página local de resposta com áudio das perguntas.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Base de conhecimento</h2>
+  <div class="duas-col">
+    <div>
+      <ul class="lista">
+        <li><span class="n">140</span> fontes, sendo:</li>
+<li><span class="n">113</span> reuniões</li>
+<li><span class="n">15</span> resoluções e portarias</li>
+<li><span class="n">12</span> leis e ofícios</li>
+        <li style="margin-top:6px"><span class="n">48.330</span>
+        unidades endereçáveis (artigo, inciso, segmento de reunião)</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:.85rem;color:var(--ink2)">Encaminhamentos das reuniões
+      (706 no total):</p>
+<div class="empilhado"><div style="flex:704;background:var(--serie)" data-dica="em andamento: 704 (100%)"></div><div style="flex:2;background:var(--ok)" data-dica="concluídos: 2 (0%)"></div></div><div class="legenda"><span class="chave"><span class="sw" style="background:var(--serie)"></span>em andamento: <b>704</b></span><span class="chave"><span class="sw" style="background:var(--espera)"></span>aguardando validação: <b>0</b></span><span class="chave"><span class="sw" style="background:var(--ok)"></span>concluídos: <b>2</b></span><span class="chave"><span class="sw" style="background:var(--neutro)"></span>cancelados: <b>0</b></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="custo">
+  <h2>A ferramenta e o custo</h2>
+  <p>Todo o sistema — parser de legislação com emendas, portão de verificação,
+  transcrição local de reuniões, busca semântica, fluxo de validação — foi
+  construído com <strong>Claude Code</strong> (Anthropic), sob assinatura
+  pessoal <strong>Claude Max 5x, de US$ 100 por mês</strong>. A assinatura é o
+  único custo: não há servidores, licenças de software ou serviços de nuvem
+  contratados; transcrição e busca rodam localmente.</p>
+  <p>Em 2 meses de assinatura (~US$ 200), a ferramenta entregou
+  70 versões incrementais, 4.584 linhas de
+  código coberto por 141 testes automatizados e uma base com
+  48.330 unidades de conhecimento consultáveis — desenvolvido
+  integralmente pelo gestor do projeto, sem equipe de desenvolvimento
+  alocada.</p>
+</section>
+
+<footer>Este painel expõe apenas métricas agregadas. O código e os dados
+ficam em repositório privado; nomes de participantes, teor de reuniões e
+documentos internos não são publicados. Gerado automaticamente pela rotina
+de atualização do projeto ·
+<a href="https://github.com/paolomartinez1/engrama-painel">github.com/paolomartinez1/engrama-painel</a></footer>
+</main>
+<div id="dica" role="status"></div>
+<script>
+const dica = document.getElementById('dica');
+document.querySelectorAll('[data-dica]').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    dica.textContent = el.dataset.dica;
+    dica.style.left = (e.clientX + 12) + 'px';
+    dica.style.top = (e.clientY - 28) + 'px';
+    dica.style.opacity = 1;
+  });
+  el.addEventListener('mouseleave', () => { dica.style.opacity = 0; });
+});
+</script>
+</body>
+</html>
